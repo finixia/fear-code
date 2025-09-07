@@ -843,19 +843,10 @@
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            handleLogin(email, password);
-        });
+            handleLogin();
         
         signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            
-            handleRegister(name, email, password);
+            handleRegistration();
         });
         
         userMenuBtn.addEventListener('click', (e) => {
@@ -887,6 +878,100 @@
         updateThemeIcon();
         updateAuthState();
         updateCartDisplay();
+        
+        // Real Authentication Functions
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store user data and token
+                    localStorage.setItem('fearUser', JSON.stringify(data.user));
+                    localStorage.setItem('fearToken', data.token);
+                    
+                    // Update UI
+                    updateAuthState();
+                    authModal.classList.add('hidden');
+                    
+                    // Clear form
+                    document.getElementById('login-email').value = '';
+                    document.getElementById('login-password').value = '';
+                    
+                    showNotification(`Welcome back, ${data.user.name}!`);
+                } else {
+                    showNotification(data.error || 'Invalid credentials', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showNotification('Login failed. Please try again.', 'error');
+            }
+        }
+        
+        async function handleRegistration() {
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            if (!name || !email || !password) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Password must be at least 6 characters long', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store user data and token
+                    localStorage.setItem('fearUser', JSON.stringify(data.user));
+                    localStorage.setItem('fearToken', data.token);
+                    
+                    // Update UI
+                    updateAuthState();
+                    authModal.classList.add('hidden');
+                    
+                    // Clear form
+                    document.getElementById('signup-name').value = '';
+                    document.getElementById('signup-email').value = '';
+                    document.getElementById('signup-password').value = '';
+                    
+                    showNotification(`Welcome to FEAR, ${data.user.name}!`);
+                } else {
+                    showNotification(data.error || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showNotification('Registration failed. Please try again.', 'error');
+            }
+        }
     });
         // Authentication Functions
         async function handleLogin(email, password) {
