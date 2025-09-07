@@ -37,6 +37,12 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user)
         localStorage.setItem('fearToken', data.token)
         localStorage.setItem('fearUser', JSON.stringify(data.user))
+        
+        // Trigger cart merge after successful login
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('userLoggedIn'))
+        }, 100)
+        
         return { success: true }
       } else {
         return { success: false, error: data.error }
@@ -63,6 +69,12 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user)
         localStorage.setItem('fearToken', data.token)
         localStorage.setItem('fearUser', JSON.stringify(data.user))
+        
+        // Trigger cart merge after successful registration
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('userLoggedIn'))
+        }, 100)
+        
         return { success: true }
       } else {
         return { success: false, error: data.error }
@@ -73,6 +85,12 @@ export const AuthProvider = ({ children }) => {
   }
 
   const logout = () => {
+    // Clear user-specific cart data on logout
+    if (user) {
+      const userCartKey = `fearCart_${user.id}`
+      localStorage.removeItem(userCartKey)
+    }
+    
     setToken(null)
     setUser(null)
     localStorage.removeItem('fearToken')

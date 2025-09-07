@@ -8,7 +8,7 @@ import Notification from '../components/Notification'
 
 const Checkout = () => {
   const navigate = useNavigate()
-  const { items, getTotal, clearCart } = useCart()
+  const { items, getTotal, clearCart, mergeGuestCart } = useCart()
   const { user, login, register, isAuthenticated } = useAuth()
   const { notifications, showNotification, removeNotification } = useNotification()
   
@@ -25,6 +25,16 @@ const Checkout = () => {
     phone: ''
   })
   const [loading, setLoading] = useState(false)
+
+  // Listen for user login events to merge guest cart
+  useEffect(() => {
+    const handleUserLoggedIn = () => {
+      mergeGuestCart()
+    }
+
+    window.addEventListener('userLoggedIn', handleUserLoggedIn)
+    return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn)
+  }, [mergeGuestCart])
 
   useEffect(() => {
     if (user) {
