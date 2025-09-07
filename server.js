@@ -616,7 +616,7 @@ app.get('/', (req, res) => {
 
 // Serve admin page
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Start server
