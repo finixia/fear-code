@@ -8,7 +8,22 @@ const Admin = () => {
   const [currentTab, setCurrentTab] = useState('dashboard')
   const [dashboardData, setDashboardData] = useState({})
   const [orders, setOrders] = useState([])
+  const [users, setUsers] = useState([])
+  const [products, setProducts] = useState([])
+  const [enquiries, setEnquiries] = useState([])
   const [loading, setLoading] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [editingProduct, setEditingProduct] = useState(null)
+  const [newProduct, setNewProduct] = useState({
+    id: '',
+    name: '',
+    description: '',
+    price: '',
+    category: 'supplements',
+    image: '',
+    stock: 100
+  })
 
   useEffect(() => {
     const adminToken = localStorage.getItem('fearAdminToken')
@@ -89,9 +104,158 @@ const Admin = () => {
     }
   }
 
+  const loadUsers = async () => {
+    try {
+      const token = localStorage.getItem('fearAdminToken')
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data)
+      }
+    } catch (error) {
+      console.error('Failed to load users:', error)
+    }
+  }
+
+  const loadProducts = async () => {
+    try {
+      const response = await fetch('/api/products')
+      if (response.ok) {
+        const data = await response.json()
+        setProducts(data)
+      }
+    } catch (error) {
+      console.error('Failed to load products:', error)
+    }
+  }
+
+  const loadEnquiries = async () => {
+    try {
+      const token = localStorage.getItem('fearAdminToken')
+      const response = await fetch('/api/admin/enquiries', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setEnquiries(data)
+      }
+    } catch (error) {
+      console.error('Failed to load enquiries:', error)
+    }
+  }
+
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      const token = localStorage.getItem('fearAdminToken')
+      const response = await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      })
+
+      if (response.ok) {
+        loadOrders()
+        alert('Order status updated successfully')
+      }
+    } catch (error) {
+      alert('Failed to update order status')
+    }
+  }
+
+  const updateUserStatus = async (userId, status) => {
+    try {
+      const token = localStorage.getItem('fearAdminToken')
+      const response = await fetch(`/api/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      })
+
+      if (response.ok) {
+        loadUsers()
+        alert('User status updated successfully')
+      }
+    } catch (error) {
+      alert('Failed to update user status')
+    }
+  }
+
+  const deleteUser = async (userId) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('fearAdminToken')
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        loadUsers()
+        alert('User deleted successfully')
+      }
+    } catch (error) {
+      alert('Failed to delete user')
+    }
+  }
+
+  const updateEnquiryStatus = async (enquiryId, status) => {
+    try {
+      const token = localStorage.getItem('fearAdminToken')
+      const response = await fetch(`/api/admin/enquiries/${enquiryId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      })
+
+      if (response.ok) {
+        loadEnquiries()
+        alert('Enquiry status updated successfully')
+      }
+    } catch (error) {
+      alert('Failed to update enquiry status')
+    }
+  }
+
   useEffect(() => {
-    if (isLoggedIn && currentTab === 'orders') {
-      loadOrders()
+    if (isLoggedIn) {
+      switch (currentTab) {
+        case 'orders':
+          loadOrders()
+          break
+        case 'users':
+          loadUsers()
+          break
+        case 'products':
+          loadProducts()
+          break
+        case 'enquiries':
+          loadEnquiries()
+          break
+        default:
+          break
+      }
     }
   }, [isLoggedIn, currentTab])
 
@@ -171,7 +335,7 @@ const Admin = () => {
       <nav className="bg-gray-100 dark:bg-gray-700 border-b">
         <div className="container mx-auto px-6">
           <div className="flex space-x-8">
-            {['dashboard', 'orders'].map(tab => (
+            {['dashboard', 'orders', 'users', 'products', 'enquiries'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setCurrentTab(tab)}
@@ -226,6 +390,47 @@ const Admin = () => {
                 </div>
               </div>
             </div>
+
+            {/* Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-bold">Recent Orders</h3>
+                </div>
+                <div className="p-6">
+                  {dashboardData.recentOrders?.map(order => (
+                    <div key={order.id} className="flex justify-between items-center py-2 border-b last:border-b-0">
+                      <div>
+                        <p className="font-medium">#{order.id.substring(0, 8)}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">₹{order.total}</p>
+                      </div>
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-bold">Recent Enquiries</h3>
+                </div>
+                <div className="p-6">
+                  {dashboardData.recentEnquiries?.map(enquiry => (
+                    <div key={enquiry.id} className="py-2 border-b last:border-b-0">
+                      <p className="font-medium">{enquiry.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{enquiry.email}</p>
+                      <p className="text-sm text-gray-500 truncate">{enquiry.message}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -243,6 +448,7 @@ const Admin = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -252,15 +458,164 @@ const Admin = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm">{order.user_email || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">₹{order.total}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {order.status}
-                        </span>
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
+                          <option value="shipped">Shipped</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(order.created_at).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="text-blue-600 hover:text-blue-800 mr-2"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {currentTab === 'users' && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-2xl font-bold">User Management</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orders</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Spent</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {users.map(user => (
+                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{user.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.order_count || 0}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">₹{user.total_spent || 0}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={user.status}
+                          onChange={(e) => updateUserStatus(user.id, e.target.value)}
+                          className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                        >
+                          <option value="active">Active</option>
+                          <option value="suspended">Suspended</option>
+                          <option value="banned">Banned</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => setSelectedUser(user)}
+                          className="text-blue-600 hover:text-blue-800 mr-2"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => deleteUser(user.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {currentTab === 'products' && (
+          <div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md mb-6">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-2xl font-bold">Product Management</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">Note: Product management is currently view-only. To add/edit products, please modify the database directly.</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Image</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {products.map(product => (
+                      <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{product.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm capitalize">{product.category}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">₹{product.price}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">{product.stock}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentTab === 'enquiries' && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-2xl font-bold">Enquiry Management</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Message</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {enquiries.map(enquiry => (
+                    <tr key={enquiry.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{enquiry.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{enquiry.email}</td>
+                      <td className="px-6 py-4 text-sm max-w-xs truncate">{enquiry.message}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={enquiry.status}
+                          onChange={(e) => updateEnquiryStatus(enquiry.id, e.target.value)}
+                          className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                        >
+                          <option value="new">New</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="resolved">Resolved</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(enquiry.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -269,6 +624,112 @@ const Admin = () => {
           </div>
         )}
       </main>
+
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Order Details</h3>
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Order ID</p>
+                  <p className="font-medium">#{selectedOrder.id}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Customer</p>
+                  <p className="font-medium">{selectedOrder.user_email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total</p>
+                  <p className="font-medium">₹{selectedOrder.total}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                  <p className="font-medium capitalize">{selectedOrder.status}</p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Items</p>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <p className="text-sm">{selectedOrder.items || 'No items data available'}</p>
+                </div>
+              </div>
+
+              {selectedOrder.shipping_address && (
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Shipping Address</p>
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <p className="text-sm">{selectedOrder.shipping_address}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Detail Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">User Details</h3>
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Name</p>
+                  <p className="font-medium">{selectedUser.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Email</p>
+                  <p className="font-medium">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Orders</p>
+                  <p className="font-medium">{selectedUser.order_count || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Spent</p>
+                  <p className="font-medium">₹{selectedUser.total_spent || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                  <p className="font-medium capitalize">{selectedUser.status}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Joined</p>
+                  <p className="font-medium">{new Date(selectedUser.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
