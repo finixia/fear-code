@@ -1,805 +1,1478 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FEAR Store - Inspired by Gods, Built for Mortals</title>
+    <title>FEAR - Inspired by Gods, Built for Warriors</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script>
+        // Set theme on initial load to prevent flash of wrong theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        // Configure Tailwind to enable dark mode via 'class' strategy
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'cinzel': ['Cinzel', 'serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Cinzel', serif; font-weight: 700; }
-        .hero-gradient { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
-        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-        .loading-spinner { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .notification { position: fixed; top: 1rem; right: 1rem; z-index: 1000; transform: translateX(100%); transition: transform 0.3s ease; }
-        .notification.show { transform: translateX(0); }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; }
-        .modal.show { display: flex; align-items: center; justify-content: center; }
-        .hidden { display: none !important; }
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+        }
+
+        .hero-section {
+            background-image: url('assets/hero section.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .product-card {
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            border-color: #FFD700;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.5), 0 0 50px rgba(255, 215, 0, 0.3);
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
-    <!-- Header -->
-    <header class="bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-md">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <div>
-                <img src="/assets/fear.png" alt="Fear Logo" class="h-14 md:h-16">
-            </div>
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="#home" class="text-gray-700 hover:text-yellow-500 transition duration-300">Home</a>
-                <a href="#products" class="text-gray-700 hover:text-yellow-500 transition duration-300">Products</a>
-                <a href="#contact" class="text-gray-700 hover:text-yellow-500 transition duration-300">Contact</a>
-                <span id="userWelcome" class="text-gray-700 hidden"></span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <!-- Cart Icon -->
-                <div class="relative cursor-pointer" onclick="openCart()">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"></path>
-                    </svg>
-                    <span id="cartCount" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+
+<body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+
+    <div id="main-content">
+        <header
+            class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 shadow-md dark:shadow-yellow-500/10">
+            <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+                <div>
+                    <a href="#home">
+                        <img src="assets/fear.png" alt="Fear Logo" class="h-14 md:h-16 block dark:hidden">
+                        <img src="assets/fear1.png" alt="Fear Logo" class="h-14 md:h-16 hidden dark:block">
+                    </a>
                 </div>
-                <!-- Auth Buttons -->
-                <button id="loginBtn" onclick="openAuth()" class="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-400 transition duration-300">Login</button>
-                <button id="logoutBtn" onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300 hidden">Logout</button>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Hero Section -->
-    <section id="home" class="hero-gradient text-black py-20">
-        <div class="container mx-auto px-6 text-center">
-            <h1 class="text-5xl md:text-7xl font-bold mb-6">FEAR</h1>
-            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Inspired by Gods, Built for Mortals</p>
-            <p class="text-lg mb-8 max-w-2xl mx-auto">
-                Unleash your inner strength with our premium supplements and gear. 
-                Every product is crafted to help you conquer your limits and achieve greatness.
-            </p>
-            <button onclick="document.getElementById('products').scrollIntoView({ behavior: 'smooth' })" 
-                    class="bg-black text-yellow-500 px-8 py-4 rounded-lg text-lg font-bold hover:bg-gray-800 transition duration-300">
-                Shop Now
-            </button>
-        </div>
-    </section>
-
-    <!-- Products Section -->
-    <section id="products" class="py-16">
-        <div class="container mx-auto px-6">
-            <div id="loadingSpinner" class="text-center py-12">
-                <div class="loading-spinner w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full mx-auto"></div>
-                <p class="mt-4 text-gray-600">Loading products...</p>
-            </div>
-            
-            <!-- Supplements -->
-            <div id="supplementsSection" class="mb-16 hidden">
-                <h2 class="text-4xl font-bold text-center mb-12">Premium Supplements</h2>
-                <div id="supplementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
-            </div>
-
-            <!-- Apparel -->
-            <div id="apparelSection" class="mb-16 hidden">
-                <h2 class="text-4xl font-bold text-center mb-12">Premium Apparel</h2>
-                <div id="apparelGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="bg-gray-100 py-16">
-        <div class="container mx-auto px-6">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl font-bold mb-8">About FEAR</h2>
-                <p class="text-lg mb-6">
-                    FEAR represents the pinnacle of fitness excellence. Our brand is built on the foundation 
-                    of pushing boundaries, breaking limits, and achieving the impossible.
-                </p>
-                <p class="text-lg mb-6">
-                    Every supplement is meticulously crafted with premium ingredients, backed by science, 
-                    and tested by athletes who demand nothing but the best.
-                </p>
-                <p class="text-lg">Join the FEAR family and transform your potential into power.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-16">
-        <div class="container mx-auto px-6">
-            <div class="max-w-2xl mx-auto">
-                <h2 class="text-4xl font-bold text-center mb-12">Get In Touch</h2>
-                <form id="contactForm" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Name</label>
-                        <input type="text" name="name" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#home"
+                        class="text-gray-700 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300">Home</a>
+                    <a href="#about"
+                        class="text-gray-700 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300">About
+                        Fear</a>
+                    <a href="#shop"
+                        class="text-gray-700 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300">Shop</a>
+                    <a href="#apparel"
+                        class="text-gray-700 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300">Apparel</a>
+                    <a href="#community"
+                        class="text-gray-700 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300">Warriors</a>
+                    <a href="#knowledge"
+                        class="text-gray-700 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300">Knowledge</a>
+                    <button id="login-btn"
+                        class="text-gray-700 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300">Login</button>
+                    <button id="signup-btn"
+                        class="bg-yellow-500 text-black py-2 px-4 rounded-lg hover:bg-yellow-400 dark:hover:bg-yellow-600 transition duration-300 font-bold">Sign
+                        Up</button>
+                    <div id="user-menu" class="hidden relative">
+                        <button id="user-menu-btn"
+                            class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <span id="user-name">User</span>
+                        </button>
+                        <div id="user-dropdown"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                            <a href="#" id="my-orders"
+                                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">My
+                                Orders</a>
+                            <a href="#" id="logout-btn"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Logout</a>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Email</label>
-                        <input type="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="cart-icon"
+                        class="relative cursor-pointer text-gray-600 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z">
+                            </path>
+                        </svg>
+                        <span id="cart-count"
+                            class="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Message</label>
-                        <textarea name="message" rows="4" class="w-full p-3 border border-gray-300 rounded-lg" required></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">
-                        Send Message
+                    <button id="theme-toggle"
+                        class="text-gray-600 dark:text-gray-300 hover:text-yellow-500 dark:hover:text-yellow-400 focus:outline-none transition-colors duration-300">
+                        <svg id="theme-icon-sun" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                            </path>
+                        </svg>
+                        <svg id="theme-icon-moon" class="w-6 h-6 hidden" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
                     </button>
+                    <div class="md:hidden">
+                        <button id="mobile-menu-button" class="text-gray-700 dark:text-gray-300 focus:outline-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16m-7 6h7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            <div id="mobile-menu" class="hidden md:hidden bg-white/95 dark:bg-gray-800/95">
+                <a href="#home" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Home</a>
+                <a href="#about" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">About Fear</a>
+                <a href="#shop" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Shop</a>
+                <a href="#apparel" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Apparel</a>
+                <a href="#community"
+                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Warriors</a>
+                <a href="#knowledge"
+                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Knowledge</a>
+                <button id="mobile-login"
+                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left">Login</button>
+                <button id="mobile-signup"
+                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left">Sign
+                    Up</button>
+            </div>
+        </header>
+
+        <main>
+            <section id="home"
+                class="hero-section h-screen flex items-center justify-center text-center relative bg-gray-800">
+                <div class="absolute inset-0 bg-black/60"></div>
+                <div class="relative z-10 p-6">
+                    <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold uppercase tracking-widest text-white"
+                        style="text-shadow: 2px 2px 10px rgba(0,0,0,0.8);">
+                        For Those Who Embrace Fear
+                    </h1>
+                </div>
+            </section>
+
+            <section id="about" class="py-20 md:py-32 bg-slate-50 dark:bg-gray-800">
+                <div class="container mx-auto px-6 text-center">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="p-8 md:p-16 rounded-lg">
+                            <h2 class="text-3xl md:text-5xl mb-6 text-stone-800 dark:text-amber-100">Fear is the Weapon
+                            </h2>
+                            <p class="text-lg md:text-xl leading-relaxed text-stone-700 dark:text-amber-50 italic">
+                                "Fear is not weakness, Fear is the weapon. Inspired by the Gods, built for the modern
+                                warriors."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="shop" class="py-20 md:py-32 bg-white dark:bg-gray-900">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-4xl md:text-5xl text-center mb-12 uppercase text-gray-900 dark:text-gray-100">Fuel
+                        for the Gods</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div
+                            class="product-card bg-slate-50 dark:bg-gray-800 rounded-lg p-6 text-center group shadow-md dark:shadow-2xl">
+                            <img src="assets/product.png" alt="Zeus Whey"
+                                class="mx-auto h-40 mb-4 rounded-full border-4 border-gray-300 dark:border-gray-600 group-hover:border-yellow-400 transition-colors duration-300">
+                            <h3 class="text-2xl mb-2 text-yellow-600 dark:text-yellow-400">Zeus Whey</h3>
+                            <div class="mt-4">
+                                <p class="text-xl font-bold text-gray-900 dark:text-white mb-3">₹2,999</p>
+                                <button onclick="addToCart('zeus-whey')"
+                                    class="w-full bg-yellow-500 text-black py-2 px-4 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Add
+                                    to Cart</button>
+                            </div>
+                        </div>
+                        <div
+                            class="product-card bg-slate-50 dark:bg-gray-800 rounded-lg p-6 text-center group shadow-md dark:shadow-2xl">
+                            <img src="assets/product.png" alt="Ares Pre-workout"
+                                class="mx-auto h-40 mb-4 rounded-full border-4 border-gray-300 dark:border-gray-600 group-hover:border-yellow-400 transition-colors duration-300">
+                            <h3 class="text-2xl mb-2 text-yellow-600 dark:text-yellow-400">Ares Pre-workout</h3>
+                            <div class="mt-4">
+                                <p class="text-xl font-bold text-gray-900 dark:text-white mb-3">₹1,999</p>
+                                <button onclick="addToCart('ares-preworkout')"
+                                    class="w-full bg-yellow-500 text-black py-2 px-4 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Add
+                                    to Cart</button>
+                            </div>
+                        </div>
+                        <div
+                            class="product-card bg-slate-50 dark:bg-gray-800 rounded-lg p-6 text-center group shadow-md dark:shadow-2xl">
+                            <img src="assets/product.png" alt="Athena Focus"
+                                class="mx-auto h-40 mb-4 rounded-full border-4 border-gray-300 dark:border-gray-600 group-hover:border-yellow-400 transition-colors duration-300">
+                            <h3 class="text-2xl mb-2 text-yellow-600 dark:text-yellow-400">Athena Focus</h3>
+                            <div class="mt-4">
+                                <p class="text-xl font-bold text-gray-900 dark:text-white mb-3">₹1,799</p>
+                                <button onclick="addToCart('athena-focus')"
+                                    class="w-full bg-yellow-500 text-black py-2 px-4 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Add
+                                    to Cart</button>
+                            </div>
+                        </div>
+                        <div
+                            class="product-card bg-slate-50 dark:bg-gray-800 rounded-lg p-6 text-center group shadow-md dark:shadow-2xl">
+                            <img src="assets/merchandise.png" alt="The Olympian Tee"
+                                class="mx-auto h-40 mb-4 rounded-lg border-4 border-gray-300 dark:border-gray-600 group-hover:border-yellow-400 transition-colors duration-300">
+                            <h3 class="text-2xl mb-2 text-yellow-600 dark:text-yellow-400">The Olympian Tee</h3>
+                            <div class="mt-4">
+                                <p class="text-xl font-bold text-gray-900 dark:text-white mb-3">₹1,999</p>
+                                <button onclick="addToCart('olympian-tee')"
+                                    class="w-full bg-yellow-500 text-black py-2 px-4 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Add
+                                    to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="apparel" class="py-20 md:py-32 bg-slate-50 dark:bg-gray-800">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-4xl md:text-5xl text-center mb-12 uppercase text-gray-900 dark:text-gray-100">Wear
+                        The Mark of a Warrior</h2>
+                    <div
+                        class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-12 bg-white dark:bg-gray-900 p-8 rounded-lg shadow-xl">
+                        <div class="md:w-1/2">
+                            <img src="assets/merchandise.png" alt="FEAR - The Olympian Tee" class="rounded-lg w-full">
+                        </div>
+                        <div class="md:w-1/2 text-center md:text-left">
+                            <h3 class="text-3xl md:text-4xl mb-4 text-yellow-600 dark:text-yellow-400">The Olympian Tee
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                                Forged for comfort, designed for the relentless. This isn't just a t-shirt; it's a
+                                statement. Show the world you conquer fear, both in the gym and out.
+                            </p>
+                            <div class="mb-6">
+                                <span class="text-4xl font-bold text-gray-900 dark:text-white">₹1,999</span>
+                                <span class="text-lg text-gray-500 line-through ml-2">₹2,499</span>
+                            </div>
+                            <button onclick="addToCart('olympian-tee')"
+                                class="w-full md:w-auto bg-yellow-500 text-black py-3 px-8 rounded-lg font-bold hover:bg-yellow-400 dark:hover:bg-yellow-600 transition duration-300 text-lg uppercase">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="community" class="py-20 md:py-32 bg-white dark:bg-gray-900">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-4xl md:text-5xl text-center mb-4 uppercase text-gray-900 dark:text-gray-100">
+                        Warriors of Olympus</h2>
+                    <p class="text-center text-lg text-gray-600 dark:text-gray-400 mb-12">Modern warriors who embraced
+                        Fear.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div
+                            class="bg-slate-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition-transform duration-300 shadow-lg">
+                            <img src="assets/wrestler.jpeg" alt="Photo of a warrior"
+                                class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-yellow-500 object-cover">
+                            <p class="text-gray-700 dark:text-gray-300 italic mb-4">"With Ares Pre-workout, I shattered
+                                my personal bests. I feel unstoppable."</p>
+                            <h4 class="text-center text-yellow-600 dark:text-yellow-400 font-bold">- Alex 'The Titan'
+                                Johnson</h4>
+                        </div>
+                        <div
+                            class="bg-slate-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition-transform duration-300 shadow-lg">
+                            <img src="assets/wrestler.jpeg" alt="Photo of a warrior"
+                                class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-yellow-500 object-cover">
+                            <p class="text-gray-700 dark:text-gray-300 italic mb-4">"Athena Focus is my secret weapon
+                                for long study sessions. The clarity is insane."</p>
+                            <h4 class="text-center text-yellow-600 dark:text-yellow-400 font-bold">- Maya Chen</h4>
+                        </div>
+                        <div
+                            class="bg-slate-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition-transform duration-300 shadow-lg">
+                            <img src="assets/wrestler.jpeg" alt="Photo of a warrior"
+                                class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-yellow-500 object-cover">
+                            <p class="text-gray-700 dark:text-gray-300 italic mb-4">"The brand's message is everything.
+                                It's more than supplements, it's a mindset."</p>
+                            <h4 class="text-center text-yellow-600 dark:text-yellow-400 font-bold">- David Rodriguez
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="knowledge" class="py-20 md:py-32 bg-slate-50 dark:bg-gray-800">
+                <div class="container mx-auto px-6 text-center">
+                    <h2 class="text-4xl md:text-5xl mb-12 uppercase text-gray-900 dark:text-gray-100">The Oracles'
+                        Knowledge</h2>
+                    <div class="max-w-3xl mx-auto space-y-6">
+                        <a href="#"
+                            class="block bg-white dark:bg-gray-900 p-8 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-yellow-500 dark:hover:border-yellow-500 transition-all duration-300 shadow-md">
+                            <h3 class="text-2xl text-yellow-600 dark:text-yellow-400 mb-2">Secrets of Spartan Training
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-400">Discover the ancient principles of discipline
+                                and strength that forged the world's most feared warriors.</p>
+                        </a>
+                        <a href="#"
+                            class="block bg-white dark:bg-gray-900 p-8 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-yellow-500 dark:hover:border-yellow-500 transition-all duration-300 shadow-md">
+                            <h3 class="text-2xl text-yellow-600 dark:text-yellow-400 mb-2">Fuel Like Hercules</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Learn about the divine nutrition that powered
+                                the demigod's legendary twelve labors.</p>
+                        </a>
+                    </div>
+                </div>
+            </section>
+            <section id="contact" class="py-20 md:py-32 bg-white dark:bg-gray-900">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-4xl md:text-5xl text-center mb-12 uppercase text-gray-900 dark:text-gray-100">Enter
+                        the Pantheon</h2>
+                    <div
+                        class="max-w-2xl mx-auto bg-slate-50 dark:bg-gray-800 p-8 md:p-12 rounded-lg temple-gate shadow-lg dark:shadow-2xl">
+                        <form>
+                            <div class="mb-6">
+                                <label for="name" class="block text-yellow-600 dark:text-yellow-400 mb-2">Your
+                                    Name</label>
+                                <input type="text" id="name" name="name"
+                                    class="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all">
+                            </div>
+                            <div class="mb-6">
+                                <label for="email" class="block text-yellow-600 dark:text-yellow-400 mb-2">Your
+                                    Email</label>
+                                <input type="email" id="email" name="email"
+                                    class="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all">
+                            </div>
+                            <div class="mb-6">
+                                <label for="message" class="block text-yellow-600 dark:text-yellow-400 mb-2">Your
+                                    Message</label>
+                                <textarea id="message" name="message" rows="4"
+                                    class="w-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"></textarea>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-yellow-500 text-black py-3 px-6 rounded-lg font-bold hover:bg-yellow-400 dark:hover:bg-yellow-600 transition duration-300 text-lg uppercase">
+                                Join the Ranks
+                            </button>
+                        </form>
+                    </div>
+                    <div class="text-center mt-12">
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Or connect with us directly:</p>
+                        <div class="flex justify-center space-x-6">
+                            <a href="#"
+                                class="text-gray-500 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-300">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.31 3.42 16.76L2 22L7.39 20.62C8.79 21.39 10.38 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 9.27 20.92 6.83 19.11 4.99C17.3 3.18 14.89 2 12.04 2M12.04 3.67C14.24 3.67 16.3 4.48 17.87 5.99C19.42 7.53 20.26 9.56 20.26 11.91C20.26 16.41 16.59 20.12 12.04 20.12C10.56 20.12 9.15 19.74 7.96 19.03L7.54 18.78L4.32 19.61L5.17 16.48L4.9 16.05C4.14 14.78 3.73 13.36 3.73 11.91C3.73 7.41 7.4 3.67 12.04 3.67M9.13 8.16C8.91 7.72 8.68 7.7 8.5 7.7C8.34 7.7 8.16 7.7 8.01 7.7C7.85 7.7 7.55 7.79 7.3 8.04C7.05 8.29 6.48 8.82 6.48 9.92C6.48 11.02 7.33 12.04 7.48 12.22C7.63 12.39 8.88 14.33 10.82 15.12C12.76 15.91 13.25 15.75 13.64 15.71C14.03 15.66 14.82 15.2 14.99 14.65C15.16 14.1 15.16 13.65 15.1 13.56C15.04 13.48 14.89 13.42 14.67 13.3C14.45 13.18 13.4 12.69 13.18 12.6C12.96 12.51 12.81 12.47 12.66 12.72C12.51 12.97 12.09 13.48 11.96 13.61C11.83 13.73 11.71 13.75 11.49 13.67C11.27 13.59 10.45 13.31 9.46 12.45C8.69 11.79 8.17 10.96 8.05 10.71C7.93 10.46 8.04 10.33 8.16 10.21C8.28 10.1 8.42 9.91 8.56 9.75C8.7 9.59 8.76 9.48 8.85 9.29C8.94 9.1 8.88 8.95 8.82 8.84C8.76 8.73 8.41 7.92 8.22 7.72" />
+                                </svg>
+                            </a>
+                            <a href="#"
+                                class="text-gray-500 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-300">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                        d="M12.315 2c-4.06.012-4.621.018-6.223.09C4.513 2.18.33 2.404 2.19 4.26c.17.17.32.384.44.622.072 1.602.078 2.163.09 6.223.012 4.06.018 4.621-.09 6.223-.092 1.577-.316 2.337-2.174 4.194-.17.17-.384.32-.622.44-1.602.072-2.163.078-6.223.09-4.06-.012-4.621-.018-6.223-.09-1.577-.092-2.337-.316-4.194-2.174-.17-.17-.32-.384-.44-.622-.072-1.602-.078-2.163-.09-6.223-.012-4.06-.018-4.621.09-6.223.092-1.577.316-2.337 2.174-4.194.17-.17.384-.32.622-.44 1.602-.072 2.163-.078 6.223-.09h.093zM12 6.865a5.135 5.135 0 100 10.27 5.135 5.135 0 000-10.27zm0 8.61a3.475 3.475 0 110-6.95 3.475 3.475 0 010 6.95zm6.398-8.91a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                            <a href="#"
+                                class="text-gray-500 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-300">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        d="M2.5 4.5h19a.5.5 0 01.5.5v14a.5.5 0 01-.5.5h-19a.5.5 0 01-.5-.5v-14a.5.5 0 01.5-.5zm18.5 1H3v2.8l9.44 6.29a1 1 0 001.12 0L21 8.3zM3 18.5h18V9.7l-8.62 5.75a2 2 0 01-2.24 0L3 9.7v8.8z" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="bg-slate-100 dark:bg-gray-800 border-t-2 border-yellow-500 py-8">
+            <div class="container mx-auto px-6 text-center text-gray-600 dark:text-gray-400">
+                <p>&copy; 2025 FEAR Industries. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <div id="payment-page" class="hidden">
+        <div class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-800">
+            <div class="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-2xl w-full max-w-md">
+                <h2 class="text-3xl font-bold text-center mb-6 text-yellow-600 dark:text-yellow-400">Secure Payment</h2>
+                <form id="payment-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="card-number"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Card Number</label>
+                            <input type="text" id="card-number" placeholder="•••• •••• •••• ••••"
+                                class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
+                                required>
+                        </div>
+                        <div>
+                            <label for="card-name"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name on Card</label>
+                            <input type="text" id="card-name" placeholder="Zeus"
+                                class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
+                                required>
+                        </div>
+                        <div class="flex space-x-4">
+                            <div class="flex-1">
+                                <label for="expiry-date"
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiry
+                                    Date</label>
+                                <input type="text" id="expiry-date" placeholder="MM/YY"
+                                    class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
+                                    required>
+                            </div>
+                            <div class="flex-1">
+                                <label for="cvv"
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">CVV</label>
+                                <input type="text" id="cvv" placeholder="•••"
+                                    class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
+                                    required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <button type="submit"
+                            class="w-full bg-yellow-500 text-black py-3 px-4 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Pay
+                            Now</button>
+                    </div>
                 </form>
+                <button id="back-to-shop-btn"
+                    class="w-full text-center mt-4 text-sm text-gray-600 dark:text-gray-400 hover:underline">← Back to
+                    Shop</button>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-6 text-center">
-            <img src="/assets/fear1.png" alt="Fear Logo" class="h-16 mx-auto mb-6">
-            <p class="text-gray-400 mb-4">© 2025 FEAR Store. All rights reserved.</p>
-            <p class="text-gray-400">Inspired by Gods, Built for Mortals</p>
-        </div>
-    </footer>
-
-    <!-- Cart Modal -->
-    <div id="cartModal" class="modal">
-        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden mx-4">
-            <div class="flex justify-between items-center p-6 border-b">
-                <h2 class="text-2xl font-bold">Shopping Cart</h2>
-                <button onclick="closeCart()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div id="cartItems" class="p-6 max-h-96 overflow-y-auto"></div>
-            <div id="cartFooter" class="p-6 border-t hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-xl font-bold">Total: ₹<span id="cartTotal">0</span></span>
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+                <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">Your Cart</h2>
+                    <button id="close-cart-btn" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"><svg
+                            class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg></button>
                 </div>
-                <div class="flex space-x-4">
-                    <button onclick="closeCart()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition duration-300">
-                        Continue Shopping
-                    </button>
-                    <button onclick="checkout()" class="flex-1 bg-yellow-500 text-black py-3 rounded-lg hover:bg-yellow-400 transition duration-300 font-bold">
-                        Checkout
-                    </button>
+                <div id="cart-items" class="p-6 flex-grow overflow-y-auto">
+                </div>
+                <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xl font-bold">Total:</span>
+                        <span id="cart-total" class="text-xl font-bold text-yellow-600 dark:text-yellow-400">₹0</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button id="continue-shopping-btn"
+                            class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-bold hover:bg-gray-400 dark:hover:bg-gray-500 transition duration-300">Continue
+                            Shopping</button>
+                        <button id="checkout-btn"
+                            class="flex-1 bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Checkout</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Auth Modal -->
-    <div id="authModal" class="modal">
-        <div class="bg-white rounded-lg max-w-md w-full mx-4">
-            <div class="flex justify-between items-center p-6 border-b">
-                <h2 class="text-2xl font-bold">Account</h2>
-                <button onclick="closeAuth()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="p-6">
-                <!-- Auth Tabs -->
-                <div class="flex space-x-4 mb-6">
-                    <button id="loginTab" onclick="switchAuthTab('login')" class="px-4 py-2 rounded-lg font-bold bg-yellow-500 text-black">Login</button>
-                    <button id="registerTab" onclick="switchAuthTab('register')" class="px-4 py-2 rounded-lg font-bold bg-gray-300 text-gray-700">Register</button>
+    <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
+                <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 id="auth-modal-title" class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">Login</h2>
+                    <button id="close-auth-modal"
+                        class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"><svg class="w-6 h-6"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg></button>
                 </div>
-
-                <!-- Login Form -->
-                <form id="loginForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Email</label>
-                        <input type="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Password</label>
-                        <input type="password" name="password" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <button type="submit" class="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">
-                        Login
-                    </button>
-                </form>
-
-                <!-- Register Form -->
-                <form id="registerForm" class="space-y-4 hidden">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Full Name</label>
-                        <input type="text" name="name" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Email</label>
-                        <input type="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Password</label>
-                        <input type="password" name="password" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <button type="submit" class="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">
-                        Register
-                    </button>
-                </form>
+                <div class="p-6">
+                    <form id="login-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" id="login-email"
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Password</label>
+                            <input type="password" id="login-password"
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                                required>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Login</button>
+                        <p class="text-center text-sm text-gray-600 dark:text-gray-400">Don't have an account? <button
+                                type="button" id="switch-to-signup"
+                                class="text-yellow-600 dark:text-yellow-400 hover:underline">Sign up</button></p>
+                    </form>
+                    <form id="signup-form" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Full Name</label>
+                            <input type="text" id="signup-name"
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" id="signup-email"
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Password</label>
+                            <input type="password" id="signup-password"
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                                required>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Sign
+                            Up</button>
+                        <p class="text-center text-sm text-gray-600 dark:text-gray-400">Already have an account? <button
+                                type="button" id="switch-to-login"
+                                class="text-yellow-600 dark:text-yellow-400 hover:underline">Login</button></p>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Checkout Modal -->
-    <div id="checkoutModal" class="modal">
-        <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4">
-            <div class="flex justify-between items-center p-6 border-b">
-                <h2 class="text-2xl font-bold">Checkout</h2>
-                <button onclick="closeCheckout()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+    <!-- ADMIN PANEL -->
+    <div id="admin-panel" class="hidden min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+        <!-- Sidebar -->
+        <div id="admin-sidebar"
+            class="bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 w-64 flex flex-col">
+            <!-- Sidebar Header -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <img src="assets/fear.png" alt="Fear Logo" class="h-8 block dark:hidden" />
+                        <img src="assets/fear1.png" alt="Fear Logo" class="h-8 hidden dark:block" />
+                        <span class="text-lg font-bold text-gray-800 dark:text-gray-200">Admin Panel</span>
+                    </div>
+                    <button id="sidebar-toggle"
+                        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <button onclick="showAdminTab('dashboard')"
+                            class="admin-nav-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 bg-yellow-500 text-black">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H10a2 2 0 01-2-2V5z" />
+                            </svg>
+                            <span class="font-medium">Dashboard</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showAdminTab('orders')"
+                            class="admin-nav-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <span class="font-medium">Orders</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showAdminTab('users')"
+                            class="admin-nav-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                            </svg>
+                            <span class="font-medium">Users</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showAdminTab('products')"
+                            class="admin-nav-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            <span class="font-medium">Products</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showAdminTab('enquiries')"
+                            class="admin-nav-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <span class="font-medium">Enquiries</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                <button onclick="adminLogout()"
+                    class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
+                    <span class="font-medium">Logout</span>
                 </button>
             </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Order Summary -->
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Top Header -->
+            <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 flex justify-between items-center">
                     <div>
-                        <h3 class="text-xl font-bold mb-4 text-yellow-600">Order Summary</h3>
-                        <div id="checkoutItems" class="space-y-4 mb-6"></div>
-                        <div class="border-t pt-4">
-                            <div class="flex justify-between items-center text-lg font-bold">
-                                <span>Total:</span>
-                                <span class="text-yellow-600">₹<span id="checkoutTotal">0</span></span>
+                        <h1 id="admin-page-title" class="text-2xl font-bold text-gray-800 dark:text-gray-200">Dashboard
+                            Overview</h1>
+                        <p id="admin-page-description" class="text-gray-600 dark:text-gray-400 text-sm">Welcome to FEAR
+                            Admin Panel</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button onclick="window.location.href='/'"
+                            class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-yellow-500 transition-colors duration-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            <span>Back to Store</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 p-6 overflow-y-auto">
+                <!-- Dashboard Tab -->
+                <div id="admin-dashboard-tab" class="admin-tab-content">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div
+                            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Orders</p>
+                                    <p id="total-orders" class="text-3xl font-bold text-yellow-600 mt-2">0</p>
+                                </div>
+                                <div class="p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-full">
+                                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Revenue</p>
+                                    <p id="total-revenue" class="text-3xl font-bold text-green-600 mt-2">₹0</p>
+                                </div>
+                                <div class="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Pending Orders</p>
+                                    <p id="pending-orders" class="text-3xl font-bold text-orange-600 mt-2">0</p>
+                                </div>
+                                <div class="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-full">
+                                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">New Enquiries</p>
+                                    <p id="new-enquiries" class="text-3xl font-bold text-blue-600 mt-2">0</p>
+                                </div>
+                                <div class="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Shipping Form -->
-                    <div>
-                        <h3 class="text-xl font-bold mb-4 text-yellow-600">Shipping Information</h3>
-                        <form id="shippingForm" class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">First Name</label>
-                                    <input type="text" name="firstName" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">Last Name</label>
-                                    <input type="text" name="lastName" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                                </div>
+                    <!-- Recent Activity -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Recent Orders</h3>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Address</label>
-                                <input type="text" name="address" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                            <div id="recent-orders" class="p-6">
+                                <p class="text-gray-500 dark:text-gray-400 text-center py-8">No recent orders</p>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">City</label>
-                                    <input type="text" name="city" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">State</label>
-                                    <input type="text" name="state" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">PIN Code</label>
-                                    <input type="text" name="pincode" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                                </div>
+                        </div>
+
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Recent Enquiries</h3>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Phone Number</label>
-                                <input type="tel" name="phone" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                            <div id="recent-enquiries" class="p-6">
+                                <p class="text-gray-500 dark:text-gray-400 text-center py-8">No recent enquiries</p>
                             </div>
-                            <button type="submit" class="w-full bg-yellow-500 text-black py-4 rounded-lg font-bold text-lg hover:bg-yellow-400 transition duration-300 uppercase">
-                                Place Order
-                            </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Orders Tab -->
+                <div id="admin-orders-tab" class="admin-tab-content hidden">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Order Management</h2>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <div id="orders-list" class="p-6">Loading orders...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="admin-users-tab" class="admin-tab-content hidden">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">User Management</h2>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <div id="users-list" class="p-6">Loading users...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Tab -->
+                <div id="admin-products-tab" class="admin-tab-content hidden">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Product Management</h2>
+                            <p class="text-gray-600 dark:text-gray-400 mt-2">Note: Product management is currently
+                                view-only. To add/edit products, please modify the database directly.</p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <div id="products-list" class="p-6">Loading products...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enquiries Tab -->
+                <div id="admin-enquiries-tab" class="admin-tab-content hidden">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Enquiry Management</h2>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <div id="enquiries-list" class="p-6">Loading enquiries...</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
-    <!-- Notification -->
-    <div id="notification" class="notification bg-yellow-500 text-black px-6 py-3 rounded-lg shadow-lg">
-        <div class="flex items-center space-x-2">
-            <span id="notificationMessage"></span>
-            <button onclick="hideNotification()" class="ml-2 hover:opacity-75">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-md">
+            <div class="text-center mb-8">
+                <img src="assets/fear.png" alt="Fear Logo" class="h-16 mx-auto mb-4 block dark:hidden" />
+                <img src="assets/fear1.png" alt="Fear Logo" class="h-16 mx-auto mb-4 hidden dark:block" />
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Admin Panel</h1>
+                <p class="text-gray-600 dark:text-gray-400">Enter your credentials to access the admin dashboard</p>
+            </div>
+
+            <form id="admin-login-form">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">Username</label>
+                    <input type="text" id="admin-username"
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                        required />
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="admin-password"
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
+                        required />
+                </div>
+                <button type="submit" id="admin-login-btn"
+                    class="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">
+                    Login to Admin Panel
+                </button>
+            </form>
+
+            <div class="mt-4 text-center">
+                <a href="/" class="text-sm text-gray-600 dark:text-gray-400 hover:underline">← Back to Store</a>
+            </div>
         </div>
     </div>
 
     <script>
-        // Global state
-        let currentUser = null;
-        let products = [];
-        let cart = [];
-
-        // User-specific cart management
-        function getCartKey() {
-            return currentUser ? `fearCart_${currentUser.id}` : 'fearCart_guest';
-        }
-
-        function loadCart() {
-            const cartKey = getCartKey();
-            const savedCart = localStorage.getItem(cartKey);
-            cart = savedCart ? JSON.parse(savedCart) : [];
-            updateCartUI();
-        }
-
-        function saveCart() {
-            const cartKey = getCartKey();
-            localStorage.setItem(cartKey, JSON.stringify(cart));
-            updateCartUI();
-        }
-
-        function mergeGuestCart() {
-            if (currentUser) {
-                const guestCart = localStorage.getItem('fearCart_guest');
-                if (guestCart) {
-                    const guestItems = JSON.parse(guestCart);
-                    guestItems.forEach(guestItem => {
-                        const existingItem = cart.find(item => item.id === guestItem.id);
-                        if (existingItem) {
-                            existingItem.quantity += guestItem.quantity;
-                        } else {
-                            cart.push(guestItem);
-                        }
-                    });
-                    localStorage.removeItem('fearCart_guest');
-                    saveCart();
-                }
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if we're on admin route
+            if (window.location.pathname === '/admin') {
+                showAdminLogin();
+                return;
             }
-        }
 
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            loadProducts();
-            loadCart();
-            setupEventListeners();
-        });
+            // --- DATA & STATE ---
+            const products = {
+                'zeus-whey': { name: 'Zeus Whey', price: 2999, image: 'assets/product.png' },
+                'ares-preworkout': { name: 'Ares Pre-workout', price: 1999, image: 'assets/product.png' },
+                'athena-focus': { name: 'Athena Focus', price: 1799, image: 'assets/product.png' },
+                'olympian-tee': { name: 'The Olympian Tee', price: 1999, image: 'assets/merchandise.png' }
+            };
+            let cart = [];
 
-        function checkAuth() {
-            const token = localStorage.getItem('fearToken');
-            const user = localStorage.getItem('fearUser');
-            
-            if (token && user) {
-                currentUser = JSON.parse(user);
-                updateAuthUI();
-                loadCart(); // Load user-specific cart
-            }
-        }
+            // --- DOM ELEMENTS ---
+            const mainContent = document.getElementById('main-content');
+            const paymentPage = document.getElementById('payment-page');
+            const cartIcon = document.getElementById('cart-icon');
+            const cartModal = document.getElementById('cart-modal');
+            const closeCartBtn = document.getElementById('close-cart-btn');
+            const continueShoppingBtn = document.getElementById('continue-shopping-btn');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const backToShopBtn = document.getElementById('back-to-shop-btn');
+            const paymentForm = document.getElementById('payment-form');
+            const themeToggleButton = document.getElementById('theme-toggle');
+            const sunIcon = document.getElementById('theme-icon-sun');
+            const moonIcon = document.getElementById('theme-icon-moon');
+            const authModal = document.getElementById('auth-modal');
+            const authModalTitle = document.getElementById('auth-modal-title');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const loginBtn = document.getElementById('login-btn');
+            const signupBtn = document.getElementById('signup-btn');
+            const mobileLogin = document.getElementById('mobile-login');
+            const mobileSignup = document.getElementById('mobile-signup');
+            const closeAuthModal = document.getElementById('close-auth-modal');
+            const switchToSignup = document.getElementById('switch-to-signup');
+            const switchToLogin = document.getElementById('switch-to-login');
+            const userMenu = document.getElementById('user-menu');
+            const userMenuBtn = document.getElementById('user-menu-btn');
+            const userDropdown = document.getElementById('user-dropdown');
+            const logoutBtn = document.getElementById('logout-btn');
+            const userName = document.getElementById('user-name');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
 
-        function updateAuthUI() {
-            const loginBtn = document.getElementById('loginBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const userWelcome = document.getElementById('userWelcome');
+            // --- FUNCTIONS ---
 
-            if (currentUser) {
-                loginBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-                userWelcome.textContent = `Welcome, ${currentUser.name}`;
-                userWelcome.classList.remove('hidden');
-            } else {
-                loginBtn.classList.remove('hidden');
-                logoutBtn.classList.add('hidden');
-                userWelcome.classList.add('hidden');
-            }
-        }
-
-        async function loadProducts() {
-            try {
-                const response = await fetch('/api/products');
-                if (response.ok) {
-                    products = await response.json();
-                    displayProducts();
+            const updateCartDisplay = () => {
+                const cartCountElement = document.getElementById('cart-count');
+                const cartItemsContainer = document.getElementById('cart-items');
+                const cartTotalElement = document.getElementById('cart-total');
+                const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+                const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+                cartCountElement.textContent = totalCount;
+                cartCountElement.style.display = totalCount > 0 ? 'flex' : 'none';
+                cartTotalElement.textContent = `₹${totalPrice.toLocaleString('en-IN')}`;
+                if (cart.length === 0) {
+                    cartItemsContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">Your cart is empty.</p>';
                 } else {
-                    showNotification('Failed to load products', 'error');
-                }
-            } catch (error) {
-                showNotification('Failed to load products', 'error');
-            }
-        }
-
-        function displayProducts() {
-            const supplements = products.filter(p => p.category === 'supplements');
-            const apparel = products.filter(p => p.category === 'apparel');
-
-            displayProductCategory('supplementsGrid', 'supplementsSection', supplements);
-            displayProductCategory('apparelGrid', 'apparelSection', apparel);
-            
-            document.getElementById('loadingSpinner').classList.add('hidden');
-        }
-
-        function displayProductCategory(gridId, sectionId, categoryProducts) {
-            const grid = document.getElementById(gridId);
-            const section = document.getElementById(sectionId);
-            
-            if (categoryProducts.length > 0) {
-                grid.innerHTML = categoryProducts.map(product => `
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden card-hover">
-                        <img src="${product.image}" alt="${product.name}" class="w-full h-64 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold mb-2">${product.name}</h3>
-                            <p class="text-gray-600 mb-4 text-sm">${product.description}</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-yellow-600">₹${product.price}</span>
-                                <button onclick="addToCart('${product.id}')" class="bg-yellow-500 text-black px-6 py-2 rounded-lg hover:bg-yellow-400 transition duration-300 font-bold">
-                                    Add to Cart
-                                </button>
+                    cartItemsContainer.innerHTML = cart.map(item => `
+                    <div class="flex justify-between items-center py-4 border-b dark:border-gray-700 last:border-b-0">
+                        <div class="flex items-center space-x-4">
+                            <img src="${products[item.id].image}" alt="${item.name}" class="w-16 h-16 rounded object-cover">
+                            <div>
+                                <p class="font-bold">${item.name}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Qty: ${item.quantity}</p>
                             </div>
                         </div>
-                    </div>
-                `).join('');
-                section.classList.remove('hidden');
-            }
-        }
-
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-
-            const existingItem = cart.find(item => item.id === productId);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ ...product, quantity: 1 });
-            }
-
-            saveCart();
-            showNotification(`${product.name} added to cart!`);
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            saveCart();
-            updateCartModal();
-        }
-
-        function updateQuantity(productId, quantity) {
-            if (quantity <= 0) {
-                removeFromCart(productId);
-                return;
-            }
-
-            const item = cart.find(item => item.id === productId);
-            if (item) {
-                item.quantity = quantity;
-                saveCart();
-                updateCartModal();
-            }
-        }
-
-        function updateCartUI() {
-            const cartCount = document.getElementById('cartCount');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            
-            if (totalItems > 0) {
-                cartCount.textContent = totalItems;
-                cartCount.classList.remove('hidden');
-            } else {
-                cartCount.classList.add('hidden');
-            }
-        }
-
-        function openCart() {
-            updateCartModal();
-            document.getElementById('cartModal').classList.add('show');
-        }
-
-        function closeCart() {
-            document.getElementById('cartModal').classList.remove('show');
-        }
-
-        function updateCartModal() {
-            const cartItems = document.getElementById('cartItems');
-            const cartFooter = document.getElementById('cartFooter');
-            const cartTotal = document.getElementById('cartTotal');
-
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p class="text-center text-gray-500 py-8">Your cart is empty</p>';
-                cartFooter.classList.add('hidden');
-            } else {
-                cartItems.innerHTML = cart.map(item => `
-                    <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
-                        <div class="flex-1">
-                            <h4 class="font-bold">${item.name}</h4>
-                            <p class="text-gray-600">₹${item.price}</p>
+                        <div class="flex items-center space-x-4">
+                           <p class="font-bold">₹${(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                           <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 text-2xl font-bold leading-none p-1" title="Remove item">&times;</button>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <button onclick="updateQuantity('${item.id}', ${item.quantity - 1})" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300">-</button>
-                            <span class="w-8 text-center">${item.quantity}</span>
-                            <button onclick="updateQuantity('${item.id}', ${item.quantity + 1})" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300">+</button>
-                        </div>
-                        <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `).join('');
-
-                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                cartTotal.textContent = total;
-                cartFooter.classList.remove('hidden');
-            }
-        }
-
-        function openAuth() {
-            document.getElementById('authModal').classList.add('show');
-        }
-
-        function closeAuth() {
-            document.getElementById('authModal').classList.remove('show');
-        }
-
-        function switchAuthTab(tab) {
-            const loginTab = document.getElementById('loginTab');
-            const registerTab = document.getElementById('registerTab');
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-
-            if (tab === 'login') {
-                loginTab.className = 'px-4 py-2 rounded-lg font-bold bg-yellow-500 text-black';
-                registerTab.className = 'px-4 py-2 rounded-lg font-bold bg-gray-300 text-gray-700';
-                loginForm.classList.remove('hidden');
-                registerForm.classList.add('hidden');
-            } else {
-                loginTab.className = 'px-4 py-2 rounded-lg font-bold bg-gray-300 text-gray-700';
-                registerTab.className = 'px-4 py-2 rounded-lg font-bold bg-yellow-500 text-black';
-                loginForm.classList.add('hidden');
-                registerForm.classList.remove('hidden');
-            }
-        }
-
-        async function handleLogin(formData) {
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: formData.get('email'),
-                        password: formData.get('password')
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    currentUser = data.user;
-                    localStorage.setItem('fearToken', data.token);
-                    localStorage.setItem('fearUser', JSON.stringify(data.user));
-                    updateAuthUI();
-                    mergeGuestCart(); // Merge guest cart with user cart
-                    closeAuth();
-                    showNotification('Login successful!');
-                } else {
-                    showNotification(data.error, 'error');
+                    </div>`).join('');
                 }
-            } catch (error) {
-                showNotification('Login failed. Please try again.', 'error');
             }
-        }
 
-        async function handleRegister(formData) {
-            try {
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: formData.get('name'),
-                        email: formData.get('email'),
-                        password: formData.get('password')
-                    })
-                });
+            const showNotification = (message, type = 'success') => {
+                const notification = document.createElement('div');
+                const bgColor = type === 'error' ? 'bg-red-500' : 'bg-yellow-500';
+                notification.className = `fixed top-5 right-5 ${bgColor} text-black px-6 py-3 rounded-lg shadow-lg z-[100] transform translate-x-[120%] transition-transform duration-300`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.classList.remove('translate-x-[120%]'), 100);
+                setTimeout(() => {
+                    notification.classList.add('translate-x-[120%]');
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    currentUser = data.user;
-                    localStorage.setItem('fearToken', data.token);
-                    localStorage.setItem('fearUser', JSON.stringify(data.user));
-                    updateAuthUI();
-                    mergeGuestCart(); // Merge guest cart with user cart
-                    closeAuth();
-                    showNotification('Registration successful!');
+            window.addToCart = (productId) => {
+                const product = products[productId];
+                if (!product) return;
+                const existingItem = cart.find(item => item.id === productId);
+                if (existingItem) {
+                    existingItem.quantity += 1;
                 } else {
-                    showNotification(data.error, 'error');
+                    cart.push({ id: productId, name: product.name, price: product.price, quantity: 1 });
                 }
-            } catch (error) {
-                showNotification('Registration failed. Please try again.', 'error');
-            }
-        }
-
-        function logout() {
-            // Clear user-specific cart on logout
-            if (currentUser) {
-                const userCartKey = `fearCart_${currentUser.id}`;
-                localStorage.removeItem(userCartKey);
-            }
-            
-            currentUser = null;
-            localStorage.removeItem('fearToken');
-            localStorage.removeItem('fearUser');
-            updateAuthUI();
-            loadCart(); // Load guest cart
-            showNotification('Logged out successfully!');
-        }
-
-        function checkout() {
-            if (!currentUser) {
-                closeCart();
-                openAuth();
-                showNotification('Please login to checkout', 'error');
-                return;
+                updateCartDisplay();
+                showNotification(`${product.name} added to cart!`);
+                localStorage.setItem('fearCart', JSON.stringify(cart));
             }
 
-            if (cart.length === 0) {
-                showNotification('Your cart is empty!', 'error');
-                return;
+            window.removeFromCart = (productId) => {
+                cart = cart.filter(item => item.id !== productId);
+                updateCartDisplay();
+                showNotification(`Item removed from cart.`);
+                localStorage.setItem('fearCart', JSON.stringify(cart));
             }
 
-            closeCart();
-            openCheckoutModal();
-        }
-
-        function openCheckoutModal() {
-            updateCheckoutModal();
-            document.getElementById('checkoutModal').classList.add('show');
-        }
-
-        function closeCheckout() {
-            document.getElementById('checkoutModal').classList.remove('show');
-        }
-
-        function updateCheckoutModal() {
-            const checkoutItems = document.getElementById('checkoutItems');
-            const checkoutTotal = document.getElementById('checkoutTotal');
-
-            checkoutItems.innerHTML = cart.map(item => `
-                <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
-                    <div class="flex-1">
-                        <h4 class="font-bold">${item.name}</h4>
-                        <p class="text-gray-600">₹${item.price} × ${item.quantity}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold">₹${item.price * item.quantity}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            checkoutTotal.textContent = total;
-
-            // Pre-fill user name if available
-            if (currentUser) {
-                const nameParts = currentUser.name.split(' ');
-                document.querySelector('#shippingForm input[name="firstName"]').value = nameParts[0] || '';
-                document.querySelector('#shippingForm input[name="lastName"]').value = nameParts.slice(1).join(' ') || '';
+            const showPaymentPage = () => {
+                mainContent.classList.add('hidden');
+                paymentPage.classList.remove('hidden');
             }
-        }
 
-        async function handleOrder(formData) {
-            const orderData = {
-                items: cart,
-                shippingAddress: {
-                    firstName: formData.get('firstName'),
-                    lastName: formData.get('lastName'),
-                    address: formData.get('address'),
-                    city: formData.get('city'),
-                    state: formData.get('state'),
-                    pincode: formData.get('pincode'),
-                    phone: formData.get('phone')
-                },
-                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            const showShopPage = () => {
+                mainContent.classList.remove('hidden');
+                paymentPage.classList.add('hidden');
+            }
+
+            const updateThemeIcon = () => {
+                const isDark = document.documentElement.classList.contains('dark');
+                sunIcon.classList.toggle('hidden', isDark);
+                moonIcon.classList.toggle('hidden', !isDark);
             };
 
+            function showAuthModal(mode) {
+                authModal.classList.remove('hidden');
+                authModalTitle.textContent = mode === 'login' ? 'Login' : 'Sign Up';
+                loginForm.classList.toggle('hidden', mode !== 'login');
+                signupForm.classList.toggle('hidden', mode === 'login');
+            }
+
+            function updateAuthState() {
+                const user = JSON.parse(localStorage.getItem('fearUser'));
+                const isLoggedIn = !!user;
+                loginBtn.classList.toggle('hidden', isLoggedIn);
+                signupBtn.classList.toggle('hidden', isLoggedIn);
+                userMenu.classList.toggle('hidden', !isLoggedIn);
+                if (isLoggedIn) {
+                    userName.textContent = user.name;
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            themeToggleButton.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                updateThemeIcon();
+            });
+
+            // Cart Modal Listeners
+            cartIcon.addEventListener('click', () => cartModal.classList.remove('hidden'));
+            closeCartBtn.addEventListener('click', () => cartModal.classList.add('hidden'));
+            continueShoppingBtn.addEventListener('click', () => cartModal.classList.add('hidden'));
+            cartModal.addEventListener('click', (e) => {
+                if (e.target === cartModal) cartModal.classList.add('hidden');
+            });
+
+            checkoutBtn.addEventListener('click', () => {
+                if (cart.length === 0) {
+                    showNotification('Your cart is empty!', 'error');
+                    return;
+                }
+                cartModal.classList.add('hidden');
+                showPaymentPage();
+            });
+
+            // Payment Page Listeners
+            backToShopBtn.addEventListener('click', showShopPage);
+            paymentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                showNotification('Payment successful! Thank you for your order.');
+                cart = [];
+                localStorage.removeItem('fearCart');
+                updateCartDisplay();
+                showShopPage();
+            });
+
+            // Auth Listeners
+            loginBtn.addEventListener('click', () => showAuthModal('login'));
+            signupBtn.addEventListener('click', () => showAuthModal('signup'));
+            mobileLogin.addEventListener('click', () => showAuthModal('login'));
+            mobileSignup.addEventListener('click', () => showAuthModal('signup'));
+            switchToLogin.addEventListener('click', () => showAuthModal('login'));
+            switchToSignup.addEventListener('click', () => showAuthModal('signup'));
+            closeAuthModal.addEventListener('click', () => authModal.classList.add('hidden'));
+            authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.add('hidden') });
+
+            loginForm.addEventListener('submit', async (e) => { // Make the function async
+    e.preventDefault();
+
+    // 1. Get user input from the form
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    // 2. Make the API call to the backend "bridge" for verification
+    try {
+        const response = await fetch('/api/login', { // Your backend login URL
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }), // Send email and password to be checked
+        });
+
+        const result = await response.json(); // Get the response data (e.g., user info, token)
+
+        // 3. Handle the response from the server
+        if (response.ok) {
+            // SUCCESS: The backend verified the credentials are correct.
+            // A real app would save an authentication token: localStorage.setItem('authToken', result.token);
+
+            // Store the user data returned from the server to update the UI
+            localStorage.setItem('fearUser', JSON.stringify(result.user));
+            
+            updateAuthState(); // This function updates the UI to show the user is logged in
+            authModal.classList.add('hidden'); // Close the modal
+            showNotification(`Welcome back, ${result.user.name}!`);
+
+        } else {
+            // FAILURE: The backend sent an error (e.g., wrong password, user not found)
+            showNotification(result.error || 'Login failed. Please check your credentials.', 'error');
+        }
+    } catch (error) {
+        // NETWORK ERROR: This happens if the backend server is not running or can't be reached.
+        showNotification('Could not connect to the server. Please try again.', 'error');
+    }
+});
+            signupForm.addEventListener('submit', async (e) => { // Note the 'async'
+                e.preventDefault();
+
+                // Get all the data from the form
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+
+                // THIS IS THE NEW PART - The API call "bridge"
+                try {
+                    const response = await fetch('/api/register', { // URL for your backend server
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name, email, password }), // Send the data
+                    });
+
+                    if (response.ok) {
+                        // The backend successfully created the user in MongoDB!
+                        showNotification('Registration successful! Welcome!');
+                        authModal.classList.add('hidden');
+                    } else {
+                        // The backend sent an error (e.g., "Email already in use")
+                        const errorData = await response.json();
+                        showNotification(errorData.message || 'Registration failed', 'error');
+                    }
+                } catch (error) {
+                    // Could not connect to the backend server
+                    showNotification('Cannot connect to the server. Please try again later.', 'error');
+                }
+            });
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('hidden');
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('fearUser');
+                updateAuthState();
+                userDropdown.classList.add('hidden');
+                showNotification('Logged out successfully');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!userMenu.contains(e.target)) userDropdown.classList.add('hidden');
+            });
+
+            // Mobile Menu Listener
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // --- INITIALIZATION ---
+            const savedCart = localStorage.getItem('fearCart');
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+            }
+            updateThemeIcon();
+            updateAuthState();
+            updateCartDisplay();
+        });
+
+        // ADMIN PANEL FUNCTIONS
+        function showAdminLogin() {
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('payment-page').style.display = 'none';
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+
+            // Add admin login handler
+            document.getElementById('admin-login-form').addEventListener('submit', handleAdminLogin);
+        }
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
+
             try {
-                const token = localStorage.getItem('fearToken');
-                const response = await fetch('/api/orders', {
+                const response = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(orderData)
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    cart = [];
-                    saveCart();
-                    closeCheckout();
-                    showNotification('Order placed successfully!');
+                    localStorage.setItem('fearAdminToken', data.token);
+                    showAdminDashboard();
+                    loadAdminDashboardData();
                 } else {
-                    showNotification(data.error, 'error');
+                    alert(data.error);
                 }
             } catch (error) {
-                showNotification('Order failed. Please try again.', 'error');
+                alert('Login failed. Please try again.');
             }
         }
 
-        async function handleContact(formData) {
+        function showAdminDashboard() {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+            document.getElementById('admin-panel').classList.remove('hidden');
+        }
+
+        function adminLogout() {
+            localStorage.removeItem('fearAdminToken');
+            window.location.href = '/admin';
+        }
+
+        function showAdminTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.admin-tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+                btn.classList.remove('bg-yellow-500', 'text-black');
+                btn.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            });
+
+            // Show selected tab content
+            document.getElementById(`admin-${tabName}-tab`).classList.remove('hidden');
+
+            // Add active class to selected nav button
+            event.target.classList.add('bg-yellow-500', 'text-black');
+            event.target.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+
+            // Update page title and description
+            const titles = {
+                dashboard: 'Dashboard Overview',
+                orders: 'Orders',
+                users: 'Users',
+                products: 'Products',
+                enquiries: 'Enquiries'
+            };
+
+            const descriptions = {
+                dashboard: 'Welcome to FEAR Admin Panel',
+                orders: 'Manage customer orders and track deliveries',
+                users: 'View and manage registered users',
+                products: 'Product catalog management',
+                enquiries: 'Customer enquiries and support tickets'
+            };
+
+            document.getElementById('admin-page-title').textContent = titles[tabName];
+            document.getElementById('admin-page-description').textContent = descriptions[tabName];
+
+            // Load data for the selected tab
+            loadAdminTabData(tabName);
+        }
+
+        async function loadAdminDashboardData() {
             try {
-                const response = await fetch('/api/contact', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: formData.get('name'),
-                        email: formData.get('email'),
-                        message: formData.get('message')
-                    })
+                const token = localStorage.getItem('fearAdminToken');
+                const response = await fetch('/api/admin/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 });
 
-                const data = await response.json();
-
                 if (response.ok) {
-                    showNotification(data.message);
-                    document.getElementById('contactForm').reset();
-                } else {
-                    showNotification(data.error, 'error');
+                    const data = await response.json();
+                    document.getElementById('total-orders').textContent = data.totalOrders || 0;
+                    document.getElementById('total-revenue').textContent = `₹${data.totalRevenue || 0}`;
+                    document.getElementById('pending-orders').textContent = data.pendingOrders || 0;
+                    document.getElementById('new-enquiries').textContent = data.newEnquiries || 0;
+
+                    // Update recent orders
+                    if (data.recentOrders && data.recentOrders.length > 0) {
+                        const recentOrdersHtml = data.recentOrders.map(order => `
+                        <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                            <div>
+                                <p class="font-medium text-gray-800 dark:text-gray-200">#${order.id.substring(0, 8)}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">₹${order.total}</p>
+                            </div>
+                            <span class="px-3 py-1 text-xs rounded-full font-medium ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                                order.status === 'delivered' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
+                                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                            }">
+                                ${order.status}
+                            </span>
+                        </div>
+                    `).join('');
+                        document.getElementById('recent-orders').innerHTML = recentOrdersHtml;
+                    }
+
+                    // Update recent enquiries
+                    if (data.recentEnquiries && data.recentEnquiries.length > 0) {
+                        const recentEnquiriesHtml = data.recentEnquiries.map(enquiry => `
+                        <div class="py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                            <p class="font-medium text-gray-800 dark:text-gray-200">${enquiry.name}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${enquiry.email}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-500 truncate mt-1">${enquiry.message}</p>
+                        </div>
+                    `).join('');
+                        document.getElementById('recent-enquiries').innerHTML = recentEnquiriesHtml;
+                    }
                 }
             } catch (error) {
-                showNotification('Failed to send message', 'error');
+                console.error('Failed to load dashboard data:', error);
             }
         }
 
-        function setupEventListeners() {
-            // Login form
-            document.getElementById('loginForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleLogin(new FormData(this));
-            });
+        async function loadAdminTabData(tabName) {
+            const token = localStorage.getItem('fearAdminToken');
 
-            // Register form
-            document.getElementById('registerForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleRegister(new FormData(this));
-            });
+            switch (tabName) {
+                case 'orders':
+                    try {
+                        const response = await fetch('/api/admin/orders', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const orders = await response.json();
+                        displayOrders(orders);
+                    } catch (error) {
+                        document.getElementById('orders-list').innerHTML = 'Failed to load orders.';
+                    }
+                    break;
 
-            // Contact form
-            document.getElementById('contactForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleContact(new FormData(this));
-            });
+                case 'users':
+                    try {
+                        const response = await fetch('/api/admin/users', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const users = await response.json();
+                        displayUsers(users);
+                    } catch (error) {
+                        document.getElementById('users-list').innerHTML = 'Failed to load users.';
+                    }
+                    break;
 
-            // Shipping form
-            document.getElementById('shippingForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleOrder(new FormData(this));
-            });
+                case 'products':
+                    try {
+                        const response = await fetch('/api/products');
+                        const products = await response.json();
+                        displayProducts(products);
+                    } catch (error) {
+                        document.getElementById('products-list').innerHTML = 'Failed to load products.';
+                    }
+                    break;
 
-            // Close modals when clicking outside
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal')) {
-                    e.target.classList.remove('show');
-                }
-            });
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            const notificationMessage = document.getElementById('notificationMessage');
-            
-            notificationMessage.textContent = message;
-            
-            if (type === 'error') {
-                notification.className = 'notification bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg';
-            } else {
-                notification.className = 'notification bg-yellow-500 text-black px-6 py-3 rounded-lg shadow-lg';
+                case 'enquiries':
+                    try {
+                        const response = await fetch('/api/admin/enquiries', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const enquiries = await response.json();
+                        displayEnquiries(enquiries);
+                    } catch (error) {
+                        document.getElementById('enquiries-list').innerHTML = 'Failed to load enquiries.';
+                    }
+                    break;
             }
-            
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
         }
 
-        function hideNotification() {
-            document.getElementById('notification').classList.remove('show');
+        function displayOrders(orders) {
+            const html = orders.length === 0 ? '<p>No orders found.</p>' : `
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Order ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Customer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    ${orders.map(order => `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">#${order.id.substring(0, 8)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${order.user_email || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">₹${order.total}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm capitalize">${order.status}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${new Date(order.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+            document.getElementById('orders-list').innerHTML = html;
+        }
+
+        function displayUsers(users) {
+            const html = users.length === 0 ? '<p>No users found.</p>' : `
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Orders</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Spent</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    ${users.map(user => `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${user.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${user.email}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${user.order_count || 0}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">₹${user.total_spent || 0}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm capitalize">${user.status}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+            document.getElementById('users-list').innerHTML = html;
+        }
+
+        function displayProducts(products) {
+            const html = products.length === 0 ? '<p>No products found.</p>' : `
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Image</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Category</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Price</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Stock</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    ${products.map(product => `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded" />
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${product.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm capitalize">${product.category}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">₹${product.price}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${product.stock}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+            document.getElementById('products-list').innerHTML = html;
+        }
+
+        function displayEnquiries(enquiries) {
+            const html = enquiries.length === 0 ? '<p>No enquiries found.</p>' : `
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Message</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    ${enquiries.map(enquiry => `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${enquiry.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${enquiry.email}</td>
+                            <td class="px-6 py-4 text-sm max-w-xs truncate">${enquiry.message}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm capitalize">${enquiry.status}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${new Date(enquiry.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+            document.getElementById('enquiries-list').innerHTML = html;
         }
     </script>
 </body>
+
 </html>
