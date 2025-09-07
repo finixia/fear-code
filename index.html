@@ -760,8 +760,7 @@
 
                 if (response.ok) {
                     showNotification('Order placed successfully!');
-                    cart = [];
-                    updateCartUI();
+                    loadUserCart(); // Reload cart (will be empty after order)
                     return true;
                 } else {
                     showNotification(data.error, 'error');
