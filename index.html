@@ -244,84 +244,124 @@
                               Join the Ranks
                           </button>
                       </form>
-                  </div>
-                  <div class="text-center mt-12">
-                       <p class="text-gray-600 dark:text-gray-400 mb-4">Or connect with us directly:</p>
-                      <div class="flex justify-center space-x-6">
-                          <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-300">
-                              <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.31 3.42 16.76L2 22L7.39 20.62C8.79 21.39 10.38 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 9.27 20.92 6.83 19.11 4.99C17.3 3.18 14.89 2 12.04 2M12.04 3.67C14.24 3.67 16.3 4.48 17.87 5.99C19.42 7.53 20.26 9.56 20.26 11.91C20.26 16.41 16.59 20.12 12.04 20.12C10.56 20.12 9.15 19.74 7.96 19.03L7.54 18.78L4.32 19.61L5.17 16.48L4.9 16.05C4.14 14.78 3.73 13.36 3.73 11.91C3.73 7.41 7.4 3.67 12.04 3.67M9.13 8.16C8.91 7.72 8.68 7.7 8.5 7.7C8.34 7.7 8.16 7.7 8.01 7.7C7.85 7.7 7.55 7.79 7.3 8.04C7.05 8.29 6.48 8.82 6.48 9.92C6.48 11.02 7.33 12.04 7.48 12.22C7.63 12.39 8.88 14.33 10.82 15.12C12.76 15.91 13.25 15.75 13.64 15.71C14.03 15.66 14.82 15.2 14.99 14.65C15.16 14.1 15.16 13.65 15.1 13.56C15.04 13.48 14.89 13.42 14.67 13.3C14.45 13.18 13.4 12.69 13.18 12.6C12.96 12.51 12.81 12.47 12.66 12.72C12.51 12.97 12.09 13.48 11.96 13.61C11.83 13.73 11.71 13.75 11.49 13.67C11.27 13.59 10.45 13.31 9.46 12.45C8.69 11.79 8.17 10.96 8.05 10.71C7.93 10.46 8.04 10.33 8.16 10.21C8.28 10.1 8.42 9.91 8.56 9.75C8.7 9.59 8.76 9.48 8.85 9.29C8.94 9.1 8.88 8.95 8.82 8.84C8.76 8.73 8.41 7.92 8.22 7.72"/></svg>
+            <div class="admin-container">
+                <!-- Sidebar -->
+                <div class="admin-sidebar">
+                    <div class="admin-sidebar-header">
+                        <img src="assets/fear1.png" alt="Fear Logo" style="height: 40px; margin-bottom: 0.5rem;">
+                        <h2 style="margin: 0; font-size: 1.25rem;">Admin Panel</h2>
                           </a>
+                    <nav class="admin-sidebar-nav">
+                        <button class="admin-nav-item active" onclick="showAdminTab('dashboard')">
+                            📊 Dashboard
+                        </button>
+                        <button class="admin-nav-item" onclick="showAdminTab('orders')">
+                            📦 Orders
+                        </button>
+                        <button class="admin-nav-item" onclick="showAdminTab('users')">
+                            👥 Users
+                        </button>
+                        <button class="admin-nav-item" onclick="showAdminTab('products')">
+                            🛍️ Products
+                        </button>
+                        <button class="admin-nav-item" onclick="showAdminTab('enquiries')">
+                            📧 Enquiries
+                        </button>
+                        <hr style="border-color: #374151; margin: 1rem 0;">
+                        <button class="admin-nav-item" onclick="window.location.href='/'">
+                            ← Back to Store
+                        </button>
+                        <button class="admin-nav-item" onclick="adminLogout()">
+                            🚪 Logout
+                        </button>
+                    </nav>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="admin-main">
+                    <div class="admin-header">
+                        <h1 id="adminPageTitle">Dashboard</h1>
                           <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-300">
-                              <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.315 2c-4.06.012-4.621.018-6.223.09C4.513 2.18.33 2.404 2.19 4.26c.17.17.32.384.44.622.072 1.602.078 2.163.09 6.223.012 4.06.018 4.621-.09 6.223-.092 1.577-.316 2.337-2.174 4.194-.17.17-.384.32-.622.44-1.602.072-2.163.078-6.223.09-4.06-.012-4.621-.018-6.223-.09-1.577-.092-2.337-.316-4.194-2.174-.17-.17-.32-.384-.44-.622-.072-1.602-.078-2.163-.09-6.223-.012-4.06-.018-4.621.09-6.223.092-1.577.316-2.337 2.174-4.194.17-.17.384-.32.622-.44 1.602-.072 2.163-.078 6.223-.09h.093zM12 6.865a5.135 5.135 0 100 10.27 5.135 5.135 0 000-10.27zm0 8.61a3.475 3.475 0 110-6.95 3.475 3.475 0 010 6.95zm6.398-8.91a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z" clip-rule="evenodd"/></svg>
-                          </a>
-                          <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-300">
-                               <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 4.5h19a.5.5 0 01.5.5v14a.5.5 0 01-.5.5h-19a.5.5 0 01-.5-.5v-14a.5.5 0 01.5-.5zm18.5 1H3v2.8l9.44 6.29a1 1 0 001.12 0L21 8.3zM3 18.5h18V9.7l-8.62 5.75a2 2 0 01-2.24 0L3 9.7v8.8z"/></svg>
-                          </a>
-                      </div>
-                  </div>
-              </div>
-          </section>
-  
-        </main>
-
-        <footer class="bg-slate-100 dark:bg-gray-800 border-t-2 border-yellow-500 py-8">
-            <div class="container mx-auto px-6 text-center text-gray-600 dark:text-gray-400">
-                <p>&copy; 2025 FEAR Industries. All rights reserved.</p>
-            </div>
-        </footer>
-    </div>
-    
-    <div id="payment-page" class="hidden">
-        <div class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-800">
-            <div class="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-2xl w-full max-w-md">
-                <h2 class="text-3xl font-bold text-center mb-6 text-yellow-600 dark:text-yellow-400">Secure Payment</h2>
-                <form id="payment-form">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="card-number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Card Number</label>
-                            <input type="text" id="card-number" placeholder="•••• •••• •••• ••••" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" required>
-                        </div>
-                        <div>
-                            <label for="card-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name on Card</label>
-                            <input type="text" id="card-name" placeholder="Zeus" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" required>
-                        </div>
-                        <div class="flex space-x-4">
-                            <div class="flex-1">
-                                <label for="expiry-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiry Date</label>
-                                <input type="text" id="expiry-date" placeholder="MM/YY" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" required>
+                    
+                    <!-- Dashboard -->
+                    <div id="admin-dashboard" class="admin-tab-content">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalOrders">0</div>
+                                <div class="stat-label">Total Orders</div>
                             </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalRevenue">₹0</div>
+                                <div class="stat-label">Total Revenue</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalUsers">0</div>
+                                <div class="stat-label">Total Users</div>
+                            </div>
+                            <div class="stat-card">
+                        html = '<p style="text-align: center; color: #6b7280; padding: 2rem;">No enquiries found.</p>';
+                                <div class="stat-label">Total Enquiries</div>
+                        html = '<table class="data-table">';
+                        html += '<thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Status</th><th>Date</th></tr></thead><tbody>';
+                        
+                        <div class="admin-content">
+                            <h3>Recent Activity</h3>
+                            <div id="recentActivity">
+                                <div class="loading">Loading recent activity...</div>
+                            </div>
+                        </div>
+            </div>
+                    
+                    <!-- Orders -->
+                    <div id="admin-orders" class="admin-tab-content" style="display: none;">
+                        <div class="admin-content">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3>Order Management</h3>
+                                <button onclick="loadOrders()" class="btn-sm btn-primary">Refresh</button>
+                            <label for="card-number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Card Number</label>
+                            <div id="ordersTable">
+                                <div class="loading">Loading orders...</div>
+                            <label for="card-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name on Card</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Users -->
+                    <div id="admin-users" class="admin-tab-content" style="display: none;">
+                        <div class="admin-content">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3>User Management</h3>
+                                <button onclick="loadUsers()" class="btn-sm btn-primary">Refresh</button>
+                            <div class="flex-1">
+                            <div id="usersTable">
+                                <div class="loading">Loading users...</div>
                             <div class="flex-1">
                                 <label for="cvv" class="block text-sm font-medium text-gray-700 dark:text-gray-300">CVV</label>
-                                <input type="text" id="cvv" placeholder="•••" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" required>
-                            </div>
-                        </div>
                     </div>
-                    <div class="mt-8">
+                    
+                    <!-- Products -->
+                    <div id="admin-products" class="admin-tab-content" style="display: none;">
+                        <div class="admin-content">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3>Product Management</h3>
+                                <button onclick="loadProducts()" class="btn-sm btn-primary">Refresh</button>
+                            </div>
+                            <div id="productsTable">
+                                <div class="loading">Loading products...</div>
+                            </div>
                         <button type="submit" class="w-full bg-yellow-500 text-black py-3 px-4 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Pay Now</button>
                     </div>
-                </form>
-                <button id="back-to-shop-btn" class="w-full text-center mt-4 text-sm text-gray-600 dark:text-gray-400 hover:underline">← Back to Shop</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-                <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">Your Cart</h2>
-                    <button id="close-cart-btn" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                </div>
-                <div id="cart-items" class="p-6 flex-grow overflow-y-auto">
-                    </div>
-                <div class="p-6 border-t border-gray-200 dark:border-gray-700">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-xl font-bold">Total:</span>
-                        <span id="cart-total" class="text-xl font-bold text-yellow-600 dark:text-yellow-400">₹0</span>
-                    </div>
-                    <div class="flex space-x-4">
-                        <button id="continue-shopping-btn" class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-bold hover:bg-gray-400 dark:hover:bg-gray-500 transition duration-300">Continue Shopping</button>
-                        <button id="checkout-btn" class="flex-1 bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition duration-300">Checkout</button>
+                    
+                    <!-- Enquiries -->
+                    <div id="admin-enquiries" class="admin-tab-content" style="display: none;">
+                        <div class="admin-content">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3>Enquiry Management</h3>
+                                <button onclick="loadEnquiries()" class="btn-sm btn-primary">Refresh</button>
+                            </div>
+                            <div id="enquiriesTable">
+                                <div class="loading">Loading enquiries...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -805,7 +845,7 @@
             
             try {
                 const response = await fetch('/api/admin/login', {
-                    method: 'POST',
+                const response = await fetch(`/api/admin/users/${userId}`, {
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -836,13 +876,27 @@
             window.location.href = '/admin';
         }
         
+        function viewOrder(orderId) {
+            alert('Order details for: ' + orderId);
+        }
+        
         function showAdminTab(tabName) {
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'orders': 'Order Management',
+                'users': 'User Management', 
+                'products': 'Product Management',
+                'enquiries': 'Enquiry Management'
+            };
+            document.getElementById('adminPageTitle').textContent = titles[tabName] || 'Dashboard';
+            
             // Hide all tab contents
             document.querySelectorAll('.admin-tab-content').forEach(tab => {
                 tab.classList.add('hidden');
             });
             
-            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.admin-nav-item');
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('border-yellow-500', 'text-yellow-600', 'dark:text-yellow-400');
                 tab.classList.add('border-transparent');
@@ -853,7 +907,7 @@
             
             // Add active class to selected tab
             event.target.classList.add('border-yellow-500', 'text-yellow-600', 'dark:text-yellow-400');
-            event.target.classList.remove('border-transparent');
+            event.target.classList.add('active');
             
             // Load data for the selected tab
             loadAdminTabData(tabName);
@@ -862,8 +916,8 @@
         async function loadAdminDashboardData() {
             try {
                 const token = localStorage.getItem('fearAdminToken');
-                const response = await fetch('/api/admin/dashboard', {
-                    headers: {
+                const response = await fetch(`/api/admin/enquiries/${enquiryId}/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                         'Authorization': `Bearer ${token}`
                     }
                 });
@@ -921,6 +975,9 @@
                 case 'enquiries':
                     try {
                         const response = await fetch('/api/admin/enquiries', {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         const enquiries = await response.json();
