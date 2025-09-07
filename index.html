@@ -843,21 +843,19 @@
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const user = { name: "Warrior" }; // Mock login
-            localStorage.setItem('fearUser', JSON.stringify(user));
-            updateAuthState();
-            authModal.classList.add('hidden');
-            showNotification('Login successful! Welcome back!');
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            handleLogin(email, password);
         });
         
         signupForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const name = signupForm.querySelector('#signup-name').value || "New Warrior";
-            const user = { name: name };
-            localStorage.setItem('fearUser', JSON.stringify(user));
-            updateAuthState();
-            authModal.classList.add('hidden');
-            showNotification('Registration successful! Welcome to FEAR!');
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            handleRegister(name, email, password);
         });
         
         userMenuBtn.addEventListener('click', (e) => {
@@ -890,7 +888,35 @@
         updateAuthState();
         updateCartDisplay();
     });
+        // Authentication Functions
+        async function handleLogin(email, password) {
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
 
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('fearToken', data.token);
+                    localStorage.setItem('fearUser', JSON.stringify(data.user));
+                    updateAuthState();
+                    authModal.classList.add('hidden');
+                    showNotification('Login successful! Welcome back!');
+                    // Clear form
+                    document.getElementById('login-email').value = '';
+                    document.getElementById('login-password').value = '';
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Login failed. Please try again.', 'error');
+            }
+        }
     // ADMIN PANEL FUNCTIONS
     function showAdminLogin() {
         document.getElementById('main-content').style.display = 'none';
