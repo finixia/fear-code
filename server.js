@@ -83,6 +83,15 @@ const orderItemSchema = new mongoose.Schema({
   price: { type: Number, required: true }
 });
 
+const cartItemSchema = new mongoose.Schema({
+  id: { type: String, default: uuidv4, unique: true },
+  user_id: { type: String, required: true },
+  product_id: { type: String, required: true },
+  quantity: { type: Number, required: true },
+  price: { type: Number, required: true },
+  created_at: { type: Date, default: Date.now }
+});
+
 const orderSchema = new mongoose.Schema({
   id: { type: String, default: uuidv4, unique: true },
   user_id: String,
@@ -100,6 +109,7 @@ const Product = mongoose.model('Product', productSchema);
 const User = mongoose.model('User', userSchema);
 const Order = mongoose.model('Order', orderSchema);
 const OrderItem = mongoose.model('OrderItem', orderItemSchema);
+const CartItem = mongoose.model('CartItem', cartItemSchema);
 
 // Initialize sample data
 async function initializeData() {
@@ -273,10 +283,20 @@ app.post('/api/login', async (req, res) => {
 
 // Create order
 app.post('/api/orders', authenticateToken, async (req, res) => {
-  const { items, shippingAddress, total } = req.body;
+  const { shippingAddress } = req.body;
   const orderId = uuidv4();
 
   try {
+    // Get cart items for the user
+    const cartItems = await CartItem.find({ user_id: req.user.userId });
+    
+    if (cartItems.length === 0) {
+      return res.status(400).json({ error: 'Cart is empty' });
+    }
+
+    // Calculate total from cart items
+    const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
     // Create order
     await Order.create({
       id: orderId,
@@ -286,10 +306,10 @@ app.post('/api/orders', authenticateToken, async (req, res) => {
     });
 
     // Create order items
-    const orderItems = items.map(item => ({
+    const orderItems = cartItems.map(item => ({
       id: uuidv4(),
       order_id: orderId,
-      product_id: item.id,
+      product_id: item.product_id,
       quantity: item.quantity,
       price: item.price
     }));
@@ -303,6 +323,9 @@ app.post('/api/orders', authenticateToken, async (req, res) => {
       amount: total,
       status: 'completed'
     });
+
+    // Clear user's cart after successful order
+    await CartItem.deleteMany({ user_id: req.user.userId });
 
     res.json({ orderId, message: 'Order created successfully' });
   } catch (error) {
@@ -325,6 +348,127 @@ app.get('/api/orders', authenticateToken, async (req, res) => {
     }));
 
     res.json(ordersWithItems);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user cart
+app.get('/api/cart', authenticateToken, async (req, res) => {
+  try {
+    const cartItems = await CartItem.find({ user_id: req.user.userId });
+    
+    // Get product details for each cart item
+    const cartWithProducts = await Promise.all(cartItems.map(async (item) => {
+      const product = await Product.findOne({ id: item.product_id });
+      return {
+        id: item.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price,
+        name: product?.name || 'Unknown Product',
+        image: product?.image || '',
+        description: product?.description || ''
+      };
+    }));
+
+    res.json(cartWithProducts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add item to cart
+app.post('/api/cart', authenticateToken, async (req, res) => {
+  const { product_id, quantity = 1 } = req.body;
+  
+  if (!product_id) {
+    return res.status(400).json({ error: 'Product ID is required' });
+  }
+
+  try {
+    // Get product details
+    const product = await Product.findOne({ id: product_id });
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Check if item already exists in cart
+    const existingItem = await CartItem.findOne({ 
+      user_id: req.user.userId, 
+      product_id: product_id 
+    });
+
+    if (existingItem) {
+      // Update quantity
+      existingItem.quantity += quantity;
+      await existingItem.save();
+    } else {
+      // Create new cart item
+      await CartItem.create({
+        user_id: req.user.userId,
+        product_id: product_id,
+        quantity: quantity,
+        price: product.price
+      });
+    }
+
+    res.json({ message: 'Item added to cart successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update cart item quantity
+app.put('/api/cart/:id', authenticateToken, async (req, res) => {
+  const { quantity } = req.body;
+  
+  if (quantity <= 0) {
+    return res.status(400).json({ error: 'Quantity must be greater than 0' });
+  }
+
+  try {
+    const cartItem = await CartItem.findOne({ 
+      id: req.params.id, 
+      user_id: req.user.userId 
+    });
+
+    if (!cartItem) {
+      return res.status(404).json({ error: 'Cart item not found' });
+    }
+
+    cartItem.quantity = quantity;
+    await cartItem.save();
+
+    res.json({ message: 'Cart item updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Remove item from cart
+app.delete('/api/cart/:id', authenticateToken, async (req, res) => {
+  try {
+    const result = await CartItem.deleteOne({ 
+      id: req.params.id, 
+      user_id: req.user.userId 
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Cart item not found' });
+    }
+
+    res.json({ message: 'Item removed from cart successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Clear user cart
+app.delete('/api/cart', authenticateToken, async (req, res) => {
+  try {
+    await CartItem.deleteMany({ user_id: req.user.userId });
+    res.json({ message: 'Cart cleared successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
